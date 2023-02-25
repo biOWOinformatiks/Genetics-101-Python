@@ -1,0 +1,32 @@
+from Bio.PDB import PDBParser, PDBList, PDBIO, PDBIOEXP
+
+# Download a PDB file and parse it into a structure object
+pdb_list = PDBList()
+pdb_list.retrieve_pdb_file('1ubq')
+
+parser = PDBParser()
+structure = parser.get_structure('1UBQ', 'pdb1ubq.ent')
+
+# Extract the coordinates of a particular residue and its neighboring residues
+residue = structure[0]['A'][18]
+neighbors = structure[0]['A'][16:21]
+
+# Calculate the root-mean-square deviation (RMSD) between two protein structures
+structure1 = parser.get_structure('1UBQ', 'pdb1ubq.ent')
+structure2 = parser.get_structure('2NYY', 'pdb2nyy.ent')
+
+io = PDBIO()
+io.set_structure(structure1)
+io.save('1ubq.pdb')
+io.set_structure(structure2)
+io.save('2nyy.pdb')
+
+parser = PDBParser()
+structure1 = parser.get_structure('1UBQ', '1ubq.pdb')
+structure2 = parser.get_structure('2NYY', '2nyy.pdb')
+
+for model1 in structure1:
+    for model2 in structure2:
+        superimposer = model1.superimpose(model2)
+        rmsd = superimposer.rms
+        print('RMSD:', rmsd)
