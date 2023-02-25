@@ -1,0 +1,24 @@
+import pandas as pd
+import numpy as np
+from deepdiff import DeepDiff
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
+
+# Define the differential expression analysis function using DeepDiff
+def differential_expression(data, groups):
+    group1 = groups[0]
+    group2 = groups[1]
+    group1_data = data[metadata['sample_type'] == group1]
+    group2_data = data[metadata['sample_type'] == group2]
+    diffs = DeepDiff(group1_data, group2_data)
+    up_genes = list(diffs['dictionary_item_added'].keys())
+    down_genes = list(diffs['dictionary_item_removed'].keys())
+    return up_genes, down_genes
+
+# Perform differential gene expression analysis between two sample types
+up_genes, down_genes = differential_expression(counts, ['tumor', 'normal'])
