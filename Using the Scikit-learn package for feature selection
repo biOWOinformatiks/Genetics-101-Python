@@ -1,0 +1,16 @@
+import pandas as pd
+from sklearn.feature_selection import SelectKBest, f_regression
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
+
+# Perform feature selection on the gene expression data
+kbest = SelectKBest(score_func=f_regression, k=100)
+kbest.fit(counts.T, metadata['sample_type'])
+
+# Get the indices of the top 100 genes
+top_genes = counts.index[kbest.get_support()]
