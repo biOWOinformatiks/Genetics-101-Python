@@ -1,0 +1,19 @@
+import pandas as pd
+from sklearn.decomposition import PCA
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
+
+# Perform PCA on the gene expression data
+pca = PCA(n_components=2)
+pca_data = pca.fit_transform(counts.T)
+
+# Plot the PCA results
+plt.scatter(pca_data[:, 0], pca_data[:, 1], c=metadata['sample_type'])
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.show()
