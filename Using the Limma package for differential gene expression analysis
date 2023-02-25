@@ -1,0 +1,35 @@
+import pandas as pd
+import rpy2.robjects as robjects
+from rpy2.robjects import pandas2ri
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
+
+# Load the Limma package and convert the data to R objects
+limma = robjects.r('library("limma")')
+counts_r = pandas2ri.py2ri(counts)
+metadata_r = pandas2ri.py2ri(metadata)
+
+# Set up the Limma experiment design and run the analysis
+design = robjects.r('''
+    design <- data.frame(row.names=colnames(counts_r), 
+                         condition=metadata_r$sample_type)
+    design.matrix <- model.matrix(~0+condition, data=design)
+''')
+fit = robjects.r('''
+    fit <- lmFit(counts_r, design.matrix)
+    fit <- eBayes(fit)
+''')
+
+# Extract the differentially expressed genes and their statistics
+res = robjects.r('''
+    res <- topTable(fit, coef="conditionTumor", adjust.method="BH", number=Inf)
+''')
+res_df = pandas2ri.ri2py(res)
+
+# Filter the significantly differentially expressed genes
+signif_genes = res_df[res_df['adj.P.Val'] < 0.05].index
