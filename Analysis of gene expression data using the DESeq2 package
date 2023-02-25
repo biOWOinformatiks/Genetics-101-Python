@@ -1,0 +1,37 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pybedtools
+from pybedtools import BedTool
+import DESeq2
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Create a DESeq2 object and normalize the counts
+dds = DESeq2.DESeqDataSetFromMatrix(countData=counts, colData=metadata, design=~group)
+dds = DESeq2.DESeq(dds)
+normalized_counts = DESeq2.counts(dds, normalized=True)
+
+# Perform differential expression analysis between two groups
+results = DESeq2.results(dds, contrast=['group', 'treatment', 'control'])
+sig_genes = results[results['padj'] < 0.05].index.tolist()
+
+# Plot the expression of the significant genes
+sns.boxplot(x='group', y=normalized_counts.loc[sig_genes].mean(axis=1), data=metadata)
+plt.title('Expression of significant genes')
+plt.show()
+
+# Perform pathway analysis using the gProfiler package
+genesets = ['GO:0008150', 'GO:0009987', 'KEGG_PATHWAY']
+gene_list = normalized_counts.loc[sig_genes].index.tolist()
+enr = gp.profile(organism='hsapiens', query=gene_list, sources=genesets, user_threshold=0.05, return_dataframe=True)
+enr = enr[enr['source'] == 'KEGG_PATHWAY']
+top_pathways = enr.sort_values('p_value').head(10)
+
+# Plot the top enriched pathways
+sns.barplot(x='p_value', y='native', data=top_pathways)
+plt.title('Top enriched pathways')
+plt.show()
