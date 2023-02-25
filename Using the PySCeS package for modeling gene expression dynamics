@@ -1,0 +1,18 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import pysces
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
+
+# Define the ODE model for gene expression dynamics
+model = pysces.model('gene_expression')
+model.addMetabolites(['mRNA', 'protein'])
+model.addReactions(['transcription', 'translation'])
+model.addSpecies(['mRNA', 'protein'], initial_concentration=0)
+model.addRateRule('mRNA', 'k_transcription')
+model.addRateRule('protein', 'k_translation * mRNA
