@@ -15,4 +15,20 @@ model.addMetabolites(['mRNA', 'protein'])
 model.addReactions(['transcription', 'translation'])
 model.addSpecies(['mRNA', 'protein'], initial_concentration=0)
 model.addRateRule('mRNA', 'k_transcription')
-model.addRateRule('protein', 'k_translation * mRNA
+model.addRateRule('protein', 'k_translation * mRNA')
+
+# Set the initial and parameter values
+model.initialConditions = {'mRNA': 0, 'protein': 0}
+model.parameterValues = {'k_transcription': 0.1, 'k_translation': 0.01}
+
+# Define the simulation time and run the simulation
+time = range(0, 100)
+result = pysces.runSimulation(model, time, return_type='dataframe')
+
+# Plot the simulation results
+plt.plot(time, result['mRNA'], label='mRNA')
+plt.plot(time, result['protein'], label='protein')
+plt.xlabel('Time')
+plt.ylabel('Concentration')
+plt.legend()
+plt.show()
