@@ -1,0 +1,7 @@
+import pandas as pd
+
+# Load the gene expression data
+counts = pd.read_csv('counts.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
