@@ -1,0 +1,36 @@
+import requests
+
+# Upload sequences to the MEME server and run a motif analysis
+seqs = '>sequence1\nATCGCGATCGCG\n>sequence2\nCGCGATCGCGAT\n>sequence3\nGATCGCGATCGC\n'
+data = {
+    'sequences': seqs,
+    'alphabet': 'dna',
+    'nmotifs': 1,
+    'minw': 6,
+    'maxw': 10,
+    'mod': 'zoops',
+    'text': 'meme_output'
+}
+response = requests.post('http://meme-suite.org/meme/cgi-bin/meme.cgi', data=data)
+job_id = response.text.split('job_id=')[1].split('&')[0]
+
+# Check the status of the MEME job
+params = {'job': job_id}
+while True:
+    response = requests.get('http://meme-suite.org/meme/result.cgi', params=params)
+    if 'Your job is finished' in response.text:
+        break
+
+# Download the MEME results and parse the motifs
+params = {
+    'output': 'text',
+    'job': job_id,
+    'command': 'meme',
+    'file': 'meme.html',
+    'text': 'meme_output'
+}
+response = requests.get('http://meme-suite.org/meme/result.cgi', params=params)
+motif_lines = response.text.split('Motif 1 width')
+motif_lines = [m for m in motif_lines if 'Multilevel' in m]
+motif_matrices = [m.split('\n')[2:-1] for m in motif_lines]
+motifs = [{'width': int(m.split('\n')[0]), 'matrix': [list(map(float, row.split())) for row in m[1:]]} for m in motif_matrices]
