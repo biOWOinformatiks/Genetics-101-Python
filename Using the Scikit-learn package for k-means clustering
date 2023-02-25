@@ -1,0 +1,20 @@
+import pandas as pd
+from sklearn.cluster import KMeans
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
+
+# Perform k-means clustering on the gene expression data
+kmeans = KMeans(n_clusters=2)
+kmeans.fit(counts.T)
+
+# Add the cluster labels to the metadata
+metadata['cluster'] = kmeans.labels_
+
+# Plot the expression of two genes in the two clusters
+sns.boxplot(x='cluster', y='GATA3', data=metadata, palette='coolwarm')
+sns.boxplot(x='cluster', y='FOXP3', data=metadata, palette='coolwarm')
