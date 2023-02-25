@@ -1,0 +1,7 @@
+import RNA
+
+# Fold an RNA sequence and calculate its minimum free energy
+seq = 'AGGGUACACACUCUAUUUCUAGUCUUUUAGAGGGCCAAAGACUGGUAGAUUGCAUCGGAUUGAAG'
+structure, mfe = RNA.fold(seq)
+print('Structure:', structure)
+print('Minimum free energy:', mfe)
