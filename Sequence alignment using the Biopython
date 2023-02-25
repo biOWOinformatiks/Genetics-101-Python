@@ -1,0 +1,11 @@
+from Bio import pairwise2
+from Bio.pairwise2 import format_alignment
+
+# Perform pairwise sequence alignment
+seq1 = 'ACCTTGGA'
+seq2 = 'ACTTTTGGA'
+alignments = pairwise2.align.globalxx(seq1, seq2)
+
+# Print the alignments
+for alignment in alignments:
+    print(format_alignment(*alignment))
