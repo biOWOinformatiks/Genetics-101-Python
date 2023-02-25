@@ -1,0 +1,20 @@
+import pandas as pd
+import scipy.stats as stats
+
+# Load the gene expression data and metadata
+counts = pd.read_csv('counts.csv', index_col=0)
+metadata = pd.read_csv('metadata.csv', index_col=0)
+
+# Filter out lowly-expressed genes
+counts = counts[counts.sum(axis=1) > 10]
+
+# Calculate the differential expression of each gene between two sample types
+sample1 = metadata['sample_type'] == 'tumor'
+sample2 = metadata['sample_type'] == 'normal'
+gene_pvalues = pd.DataFrame(index=counts.index, columns=['pvalue'])
+for gene in counts.index:
+    pvalue = stats.ttest_ind(counts.loc[gene, sample1], counts.loc[gene, sample2])[1]
+    gene_pvalues.loc[gene] = pvalue
+
+# Filter the significantly differentially expressed genes
+signif_genes = gene_pvalues[gene_pvalues['pvalue'] < 0.05].index
