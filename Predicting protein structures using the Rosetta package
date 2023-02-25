@@ -1,0 +1,22 @@
+import pyrosetta
+from pyrosetta import pose_from_sequence, create_score_function, MonteCarlo, PyMOLMover
+
+# Initialize the PyRosetta object
+pyrosetta.init()
+
+# Create a PyMOLMover object to visualize the protein structure
+pymol = PyMOLMover()
+
+# Create a score function object
+scorefxn = create_score_function('ref2015')
+
+# Generate an initial protein structure from a sequence
+sequence = 'MKQHKAMIVALIVICITAVVAALVTRKDLCEVHIRTGQTEVAVF'
+pose = pose_from_sequence(sequence)
+
+# Perform protein structure prediction using Rosetta's Monte Carlo algorithm
+mc = MonteCarlo(pose, scorefxn, 1.0)
+mc.boltzmann(1)
+
+# Visualize the predicted protein structure in PyMOL
+pymol.apply(pose)
