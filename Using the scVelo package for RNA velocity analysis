@@ -1,0 +1,17 @@
+import pandas as pd
+import scvelo as scv
+
+# Load the single-cell RNA-seq data and metadata
+adata = scv.read('data.h5ad')
+
+# Preprocess the data and compute RNA velocity
+scv.pp.filter_genes(adata, min_counts=20)
+scv.pp.normalize_total(adata, target_sum=1e4)
+scv.pp.log1p(adata)
+scv.pp.filter_genes_dispersion(adata)
+scv.pp.neighbors(adata, n_neighbors=10)
+scv.tl.velocity(adata)
+
+# Plot the results
+scv.tl.umap(adata)
+scv.pl.velocity_embedding(adata, basis='umap', color=['sample_type'])
