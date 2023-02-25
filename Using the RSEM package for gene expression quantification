@@ -1,0 +1,20 @@
+import pandas as pd
+import subprocess
+
+# Load the RNA-seq data and metadata
+fastq_files = ['sample1_1.fastq', 'sample1_2.fastq', 'sample2_1.fastq', 'sample2_2.fastq']
+metadata = pd.DataFrame({'sample_type': ['tumor', 'tumor', 'normal', 'normal']})
+
+# Run the RSEM pipeline for gene expression quantification
+rsem_cmd = 'rsem-calculate-expression --paired-end --no-bam-output --quiet'
+rsem_cmd += ' --num-threads 4 --strandedness reverse'
+rsem_cmd += ' --bowtie2 --bowtie2-path /path/to/bowtie2'
+rsem_cmd += ' sample1_1.fastq sample1_2.fastq ref_dir/sample1'
+rsem_cmd += ' && ' + rsem_cmd.replace('sample1', 'sample2')
+subprocess.call(rsem_cmd, shell=True)
+
+# Load the RSEM output and merge with the metadata
+rsem_results = pd.read_csv('rsem_output/gene_expression.isoforms.results', sep='\t', index_col=0)
+rsem_results = rsem_results[['TPM', 'expected_count']]
+metadata = metadata.loc[rsem_results.index]
+rsem_results = pd.concat([metadata, rsem_results], axis=1)
